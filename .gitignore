@@ -1,1 +1,7 @@
 .env
+.github
+tools/__pycache__
+tests/__pycache__
+data/__pycache__
+__pycache__
+dummy.py
