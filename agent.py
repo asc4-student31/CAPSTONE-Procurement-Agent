@@ -20,18 +20,7 @@ load_dotenv()
 OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY") or os.getenv("OPEN_API_KEY")
 if OPENAI_API_KEY and "OPENAI_API_KEY" not in os.environ:
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-
-
-def _normalize_model_name(model_name: str) -> str:
-    """Map deprecated model prefixes to stable, explicit provider prefixes."""
-    if model_name.startswith("openai:"):
-        return "openai-chat:" + model_name.split(":", 1)[1]
-    return model_name
-
-
-MODEL_NAME = _normalize_model_name(
-    os.getenv("PROCUREMENT_AGENT_MODEL", "openai-chat:gpt-4")
-)
+MODEL_NAME = os.getenv("PROCUREMENT_AGENT_MODEL", "openai:gpt-4")
 
 SYSTEM_PROMPT = """
 You are the Procurement Intelligence Agent for FedEx procurement pre-screening.
