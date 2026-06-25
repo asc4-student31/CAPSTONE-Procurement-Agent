@@ -220,9 +220,25 @@ def _build_user_prompt(
 def recommend_procurement(purchase_request: PurchaseRequest) -> ProcurementRecommendation:
     """Evaluate a purchase request and return a typed procurement recommendation."""
     tool_results = _collect_tool_results(purchase_request)
+    deterministic_decision = _resolve_final_decision(_derive_decision_candidates(tool_results))
 
     try:
         result = agent.run_sync(_build_user_prompt(purchase_request, tool_results))
-        return result.data
+        model_recommendation = getattr(result, "data", None) or getattr(result, "output", None)
+        if not isinstance(model_recommendation, ProcurementRecommendation):
+            raise TypeError("Model returned unexpected recommendation payload type")
+
+        if model_recommendation.decision == deterministic_decision:
+            return model_recommendation
+
+        rationale = (
+            f"{model_recommendation.rationale} "
+            "Deterministic override applied from tool outcomes using precedence "
+            "escalate > deny > approve."
+        ).strip()
+        return ProcurementRecommendation(
+            decision=deterministic_decision,
+            rationale=rationale,
+        )
     except Exception as exc:
         return _fallback_recommendation(purchase_request, tool_results, exc)

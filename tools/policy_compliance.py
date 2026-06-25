@@ -119,10 +119,11 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
     # POL-002: Manager approval threshold; no approval metadata is present in input model.
     policy_by_id.get("POL-002")
 
-    # POL-003: Director approval threshold.
+    # POL-003: Director approval threshold and near-threshold escalation.
     pol003 = policy_by_id.get("POL-003")
     if pol003 is not None:
         threshold = float(pol003.get("threshold_amount", 0.0))
+        near_threshold_lower_bound = threshold * 0.95
         if purchase_request.total_amount >= threshold:
             _add_violation(
                 violations,
@@ -130,6 +131,16 @@ def check_policy_compliance(purchase_request: PurchaseRequest) -> dict[str, obje
                 (
                     f"Amount ${purchase_request.total_amount:.2f} meets or exceeds director "
                     f"approval threshold ${threshold:.2f}."
+                ),
+                "escalate",
+            )
+        elif purchase_request.total_amount >= near_threshold_lower_bound:
+            _add_violation(
+                violations,
+                "POL-003",
+                (
+                    f"Amount ${purchase_request.total_amount:.2f} is within 5% of director "
+                    f"approval threshold ${threshold:.2f}; escalation required."
                 ),
                 "escalate",
             )
