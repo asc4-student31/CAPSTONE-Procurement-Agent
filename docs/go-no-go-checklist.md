@@ -49,7 +49,7 @@
 
 | Finding | Addressed? | Resolution Summary |
 |---------|------------|-------------------|
-| | | |
+| ITC.009 Author / Reviewer Separation (`author == reviewer context` pattern from `git log -1`) | Yes | Exception acknowledged for this cycle: review executed by GitHub Copilot on behalf of the same developer identity and accepted as AI-assisted self-review with Go/No-Go governance traceability. |
 | | | |
 
 ---
