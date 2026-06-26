@@ -49,6 +49,17 @@ def check_vendor_duplication(
         set(pol001.get("affected_categories", [])) if pol001 is not None else set()
     )
 
+    request_vendor_record = next(
+        (
+            vendor
+            for vendor in vendors
+            if vendor.get("vendor_id") == vendor_id
+            and vendor.get("category") == category
+            and vendor.get("contract_status") == "active"
+        ),
+        None,
+    )
+
     conflicts = [
         vendor
         for vendor in vendors
@@ -69,14 +80,28 @@ def check_vendor_duplication(
     ]
 
     category_is_contracted = category in affected_categories
+    request_vendor_is_contracted = request_vendor_record is not None
     threshold_exceeded = amount > threshold
 
-    if conflicts and category_is_contracted and threshold_exceeded:
+    if (
+        conflicts
+        and category_is_contracted
+        and threshold_exceeded
+        and not request_vendor_is_contracted
+    ):
         forced_decision = "deny"
         rationale = (
             f"POL-001 triggered: amount ${amount:.2f} exceeds threshold ${threshold:.2f} "
             f"for contracted category '{category}' with active conflicting vendor(s): "
             f"{', '.join(conflicting_vendor_ids)}."
+        )
+    elif conflicts and request_vendor_is_contracted:
+        forced_decision = None
+        rationale = (
+            f"Active alternate contracted vendor(s) found for category '{category}': "
+            f"{', '.join(conflicting_vendor_ids)}. Requested vendor {vendor_id} is also "
+            "active and contracted for this category, so no vendor-duplication policy "
+            "trigger applies."
         )
     elif conflicts:
         forced_decision = "escalate"
