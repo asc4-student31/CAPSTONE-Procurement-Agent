@@ -152,7 +152,7 @@ def _derive_decision_candidates(tool_results: dict[str, dict[str, object]]) -> s
         candidates.add("escalate")
     else:
         risk_level = str(risk_result.get("risk_level", "")).lower()
-        if risk_level in {"critical", "high", "medium"}:
+        if risk_level in {"critical", "high"}:
             candidates.add("escalate")
 
     if not candidates:
